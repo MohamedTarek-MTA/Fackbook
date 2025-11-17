@@ -1,0 +1,43 @@
+package com.fackbook.Request.Entity;
+
+import com.fackbook.Request.Enum.Status;
+import com.fackbook.Request.Enum.Type;
+import com.fackbook.User.Entity.User;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "requests")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+public class Request {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotNull
+    private Long targetId;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Type type;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+    private LocalDateTime deletedAt;
+    private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
+
+}
