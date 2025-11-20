@@ -5,10 +5,12 @@ import com.fackbook.Post.Enum.Status;
 import com.fackbook.Reply.Entity.Reply;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,9 +36,16 @@ public class Comment {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
+    private Boolean deleted = false;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Min(0)
+    private BigInteger numberOfReacts = BigInteger.ZERO;
+    @Min(0)
+    private BigInteger numberOfReplies = BigInteger.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

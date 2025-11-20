@@ -1,7 +1,7 @@
 package com.fackbook.Request.Entity;
 
 import com.fackbook.Request.Enum.Status;
-import com.fackbook.Request.Enum.Type;
+import com.fackbook.Request.Enum.TargetType;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +26,7 @@ public class Request {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private TargetType targetType;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -36,6 +36,8 @@ public class Request {
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
     private LocalDateTime updatedAt;
+
+    private Boolean deleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

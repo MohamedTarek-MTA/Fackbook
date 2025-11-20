@@ -4,10 +4,12 @@ import com.fackbook.User.Entity.User;
 import com.fackbook.User.Enum.Status;
 import com.fackbook.Post.Entity.Post;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,10 +33,15 @@ public class Group {
     private String description;
     private String imageUrl;
 
+    @Min(0)
+    private BigInteger numberOfMembers = BigInteger.ZERO;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
     private LocalDateTime updatedAt;
+
+    private Boolean deleted = false;
 
     @NotNull
     @Enumerated(EnumType.STRING)

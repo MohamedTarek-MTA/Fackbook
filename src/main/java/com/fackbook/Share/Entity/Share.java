@@ -19,7 +19,7 @@ public class Share {
 
     private String content;
 
-    // do NOT cascade from child to parent
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

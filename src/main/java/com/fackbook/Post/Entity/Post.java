@@ -7,10 +7,12 @@ import com.fackbook.Post.Enum.Status;
 import com.fackbook.Share.Entity.Share;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,6 +33,13 @@ public class Post {
     private String imageUrl;
     private String videoUrl;
 
+    @Min(0)
+    private BigInteger numberOfReacts = BigInteger.ZERO;
+    @Min(0)
+    private BigInteger numberOfComments = BigInteger.ZERO;
+    @Min(0)
+    private BigInteger numberOfShares = BigInteger.ZERO;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
@@ -42,6 +51,8 @@ public class Post {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
+
+    private Boolean deleted = false;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Comment> comments;

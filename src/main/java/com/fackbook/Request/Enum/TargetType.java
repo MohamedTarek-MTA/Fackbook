@@ -1,6 +1,6 @@
 package com.fackbook.Request.Enum;
 
-public enum Type {
+public enum TargetType {
     FRIENDSHIP,
     JOINING_GROUP,
     USER,

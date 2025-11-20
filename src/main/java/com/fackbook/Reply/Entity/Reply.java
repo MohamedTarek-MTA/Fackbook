@@ -36,6 +36,8 @@ public class Reply {
     private LocalDateTime deletedAt;
     private LocalDateTime updatedAt;
 
+    private Boolean deleted = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

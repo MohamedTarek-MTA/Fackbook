@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -28,6 +29,13 @@ public class GroupMember {
     @NotNull
     @Enumerated(EnumType.STRING)
     public Role role;
+
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+    private LocalDateTime deletedAt;
+    private LocalDateTime updatedAt;
+
+    private Boolean deleted = false;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

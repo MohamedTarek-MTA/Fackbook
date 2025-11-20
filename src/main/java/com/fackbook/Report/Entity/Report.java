@@ -1,7 +1,7 @@
 package com.fackbook.Report.Entity;
 
-import com.fackbook.Report.Enum.Status;
-import com.fackbook.Request.Enum.Type;
+import com.fackbook.Request.Enum.Status;
+import com.fackbook.Request.Enum.TargetType;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -37,11 +37,13 @@ public class Report {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private Type targetType;
+    private TargetType targetType;
 
     @NotNull
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    private Boolean deleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -25,16 +25,18 @@ public class Friend {
     private LocalDateTime deletedAt;
     private LocalDateTime updatedAt;
 
+    private Boolean deleted = false;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    // owner (who initiated or holds the relation record)
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // the other user in the friendship
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "friend_user_id", nullable = false)
     private User friend;
