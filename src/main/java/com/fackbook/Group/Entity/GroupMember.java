@@ -24,14 +24,17 @@ public class GroupMember {
     @NotNull
     @Enumerated(EnumType.STRING)
     private Status status;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     public Role role;
 
-    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private List<Group> groups;
 
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

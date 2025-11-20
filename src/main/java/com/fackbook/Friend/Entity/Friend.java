@@ -20,12 +20,6 @@ public class Friend {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    private Long userId;
-    @NotNull
-    private Long friendId;
-
-    @NotNull
     @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
@@ -35,7 +29,13 @@ public class Friend {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    // owner (who initiated or holds the relation record)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    // the other user in the friendship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "friend_user_id", nullable = false)
+    private User friend;
 }

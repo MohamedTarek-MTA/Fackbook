@@ -1,5 +1,6 @@
 package com.fackbook.Group.Entity;
 
+import com.fackbook.User.Entity.User;
 import com.fackbook.User.Enum.Status;
 import com.fackbook.Post.Entity.Post;
 import jakarta.persistence.*;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "groups",indexes = {
+@Table(name = "`groups`", indexes = {
         @Index(name = "idx_group_name", columnList = "name")
 })
 @AllArgsConstructor
@@ -25,7 +26,7 @@ public class Group {
     private Long id;
 
     @NotBlank
-    @Column(unique = true,name = "name")
+    @Column(unique = true, name = "name")
     private String name;
     private String description;
     private String imageUrl;
@@ -39,6 +40,13 @@ public class Group {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToMany(mappedBy = "group",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Post> posts;
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<GroupMember> members;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
 }

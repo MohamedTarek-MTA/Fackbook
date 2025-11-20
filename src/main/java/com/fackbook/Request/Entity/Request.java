@@ -27,6 +27,7 @@ public class Request {
     @NotNull
     @Enumerated(EnumType.STRING)
     private Type type;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -36,8 +37,7 @@ public class Request {
     private LocalDateTime deletedAt;
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 }

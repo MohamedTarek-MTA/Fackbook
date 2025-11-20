@@ -1,7 +1,7 @@
 package com.fackbook.React.Entity;
 
 import com.fackbook.React.Enum.ReactType;
-import com.fackbook.Report.Enum.Type;
+import com.fackbook.Request.Enum.Type;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +27,7 @@ public class React {
     @NotNull
     @Enumerated(EnumType.STRING)
     private ReactType reactType;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Type targetType;
@@ -36,7 +37,7 @@ public class React {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }
