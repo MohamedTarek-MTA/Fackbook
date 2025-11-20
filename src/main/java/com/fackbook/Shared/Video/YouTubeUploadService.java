@@ -1,4 +1,4 @@
-package com.fackbook.Shared.Video.Service;
+package com.fackbook.Shared.Video;
 
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Video;
