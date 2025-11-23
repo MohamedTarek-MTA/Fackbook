@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.Period;
 
@@ -33,6 +34,9 @@ public class Helper {
             return period.getDays() + (period.getDays() == 1 ? " Day" : " Days");
         }
     }
-
-
+    public static String generateCode(){
+        SecureRandom secureRandom = new SecureRandom();
+        int code = 100000 + secureRandom.nextInt(900000); // ensures 6-digit number
+        return String.valueOf(code);
+    }
 }

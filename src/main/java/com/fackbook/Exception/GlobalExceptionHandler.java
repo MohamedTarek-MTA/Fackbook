@@ -16,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -143,5 +144,15 @@ public class GlobalExceptionHandler {
 
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<Object> handleRateLimitException(RateLimitException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", 429);
+        body.put("error", "Too Many Requests");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(429).body(body);
     }
 }

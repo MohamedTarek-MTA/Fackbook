@@ -1,5 +1,6 @@
 package com.fackbook.User.Mapper;
 
+import com.fackbook.Shared.Helper.Helper;
 import com.fackbook.User.DTO.UserDTO;
 import com.fackbook.User.Entity.User;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ public class UserMapper {
                 .phone(user.getPhone())
                 .address(user.getAddress())
                 .bio(user.getBio())
+                .age(Helper.getAge(user.getBirthdate()))
                 .imageUrl(user.getImageUrl())
                 .birthdate(user.getBirthdate())
                 .gender(user.getGender())

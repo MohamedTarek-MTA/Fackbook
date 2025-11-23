@@ -1,4 +1,4 @@
-package com.fackbook.Mail.DTO;
+package com.fackbook.Shared.Mail.DTO;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

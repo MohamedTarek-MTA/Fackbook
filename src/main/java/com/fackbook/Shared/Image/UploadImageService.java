@@ -30,7 +30,7 @@ public class UploadImageService {
     private static final Logger logger = LoggerFactory.getLogger(UploadImageService.class);
     private final ObjectMapper objectMapper ;
 
-    public String uploadBase64Image(String base64Image){
+    private String uploadBase64Image(String base64Image){
         logger.info("Starting Upload Image !!");
 
         String uploadUrl = "https://api.imgbb.com/1/upload?key="+imgbbApiKey;

@@ -1,6 +1,6 @@
-package com.fackbook.Mail.Mapper;
+package com.fackbook.Shared.Mail.Mapper;
 
-import com.fackbook.Mail.DTO.MailDTO;
+import com.fackbook.Shared.Mail.DTO.MailDTO;
 import org.springframework.stereotype.Component;
 
 @Component
