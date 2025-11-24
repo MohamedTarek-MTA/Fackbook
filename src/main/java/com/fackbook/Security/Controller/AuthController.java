@@ -7,6 +7,8 @@ import com.fackbook.Security.DTO.ResetPasswordRequest;
 import com.fackbook.Security.RateLimiter.RateLimit;
 import com.fackbook.Security.Service.AuthService;
 import com.fackbook.Shared.Mail.DTO.MailDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +34,18 @@ public class AuthController {
     }
     @PostMapping("/login")
     @RateLimit(maxRequests = 5, timeWindowMs = 30000)
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request){
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request, HttpServletResponse response){
+        return ResponseEntity.ok(authService.login(request,response));
+    }
+    @PostMapping("/logout")
+    @RateLimit(maxRequests = 1, timeWindowMs = 60000)
+    public ResponseEntity<?> logout(HttpServletRequest request,HttpServletResponse response){
+        return ResponseEntity.ok(authService.logout(request,response));
+    }
+    @PostMapping("/refresh-token")
+    @RateLimit(maxRequests = 1, timeWindowMs = 60000)
+    public ResponseEntity<?> refreshToken(HttpServletRequest request){
+        return ResponseEntity.ok(authService.refreshAccessToken(request));
     }
     @PostMapping("/reset-password")
     @RateLimit(maxRequests = 5, timeWindowMs = 30000)

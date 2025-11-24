@@ -1,6 +1,7 @@
 package com.fackbook.Security.Service;
 
 import com.fackbook.Security.DTO.*;
+import com.fackbook.Security.Entity.RefreshToken;
 import com.fackbook.Security.Util.JwtUtil;
 import com.fackbook.Shared.Helper.Helper;
 import com.fackbook.Shared.Mail.DTO.MailDTO;
@@ -10,6 +11,10 @@ import com.fackbook.User.Entity.User;
 import com.fackbook.User.Enum.Status;
 import com.fackbook.User.Repository.UserRepository;
 import com.fackbook.User.Service.UserService;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +23,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Locale;
 
 
 @Service
@@ -69,7 +79,7 @@ public class AuthService {
             throw new RuntimeException("An unexpected error occurred. Please try again later.");
         }
     }
-    public AuthResponse login(AuthRequest request){
+    public AuthResponse login(AuthRequest request,HttpServletResponse response){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword())
         );
@@ -81,6 +91,7 @@ public class AuthService {
             throw new IllegalArgumentException("Your account is currently " + user.getStatus().name().toLowerCase() + ". Please verify or contact support.");
         }
         String token = jwtUtil.generateToken(user.getId(),user.getEmail(),user.getRole().name(),user.getStatus().name());
+        generateRefreshTokenCookies(jwtUtil.generateRefreshToken(user.getId()),response);
         userService.updateLastLoginDateById(user.getId());
         return new AuthResponse(token);
     }
@@ -132,5 +143,56 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         return "Password Changed Successfully !";
+    }
+    public String logout(HttpServletRequest request,HttpServletResponse response){
+        var refreshToken = extractRefreshTokenFromCookies(request);
+        if(refreshToken != null){
+            var token = jwtUtil.findRefreshToken(refreshToken);
+            if(token != null){
+                jwtUtil.deleteRefreshTokenByUserId(token.getUser().getId());
+            }
+        }
+        deleteRefreshTokenCookies(response);
+        return "Logged out successfully !";
+    }
+
+    public void generateRefreshTokenCookies(RefreshToken refreshToken,HttpServletResponse response){
+        Cookie cookie = new Cookie("refreshToken",refreshToken.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // if not working it because https issues so make it false
+        cookie.setPath("/api/v1/auth/refresh-token");
+        long maxAgeSeconds = refreshToken.getExpirationDate().getEpochSecond() - Instant.now().getEpochSecond();
+        cookie.setMaxAge((int)maxAgeSeconds);
+         response.addCookie(cookie);
+    }
+    public void deleteRefreshTokenCookies(HttpServletResponse response){
+        Cookie cookie = new Cookie("refreshToken",null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // if not working it because https issues so make it false
+        cookie.setPath("/api/v1/auth/refresh-token");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+    public String extractRefreshTokenFromCookies(HttpServletRequest request){
+        String refreshToken = null;
+        if(request.getCookies() != null){
+            for(Cookie cookie : request.getCookies()){
+                if("refreshToken".equals(cookie.getName())){
+                    refreshToken = cookie.getValue();
+                }
+            }
+        }
+        if(refreshToken == null){
+            throw new IllegalArgumentException("Refresh Token Not Found !");
+        }
+        return refreshToken;
+    }
+    public AuthResponse refreshAccessToken(HttpServletRequest request){
+        var refreshToken = extractRefreshTokenFromCookies(request);
+        RefreshToken token = jwtUtil.findRefreshToken(refreshToken);
+            jwtUtil.verifyExpiration(token);
+            var user = token.getUser();
+            var newAccessToken = jwtUtil.generateToken(user.getId(),user.getEmail(),user.getRole().name(),user.getStatus().name());
+            return new AuthResponse(newAccessToken);
     }
 }

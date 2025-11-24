@@ -13,4 +13,6 @@ public class JwtConfig {
     private String secretKey;
     @Value("${spring.jwt.expiration}")
     private Long expiration;
+    @Value("${spring.jwt.refresh.expiration}")
+    private Long refreshExpiration;
 }
