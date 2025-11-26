@@ -9,9 +9,7 @@ import com.fackbook.Shared.Mail.Mapper.MailMapper;
 import com.fackbook.Shared.Mail.Service.MailService;
 import com.fackbook.User.Entity.User;
 import com.fackbook.User.Enum.Status;
-import com.fackbook.User.Repository.UserRepository;
 import com.fackbook.User.Service.UserService;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,12 +21,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Locale;
+
 
 
 @Service
@@ -39,7 +35,6 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
-    private final UserRepository userRepository;
     private final MailService mailService;
 
     @Transactional
@@ -71,7 +66,7 @@ public class AuthService {
                     .updatedAt(null)
                     .verificationCode(verificationCode)
                     .build();
-            userRepository.save(user);
+            userService.saveUser(user);
             mailService.sendCodeToViaEmail(MailMapper.toDTO(user.getEmail(),verificationCode));
             return "Please Check Your Email to Get Verification Code !!";
         }catch (Exception e){
@@ -117,7 +112,7 @@ public class AuthService {
         try{
             String verificationCode = Helper.generateCode();
             user.setVerificationCode(verificationCode);
-            userRepository.save(user);
+            userService.saveUser(user);
             mailService.sendCodeToViaEmail(MailMapper.toDTO(user.getEmail(),verificationCode));
             return "Please Check Your Email to Get Verification Code !!";
         }catch (Exception e){
@@ -141,7 +136,7 @@ public class AuthService {
             throw new IllegalArgumentException("Passwords Don't Match !");
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        userService.saveUser(user);
         return "Password Changed Successfully !";
     }
     public String logout(HttpServletRequest request,HttpServletResponse response){

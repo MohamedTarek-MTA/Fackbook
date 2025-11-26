@@ -193,4 +193,7 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
         return UserMapper.toDTO(userRepository.save(user));
     }
+    public void saveUser(User user){
+         userRepository.save(user);
+    }
 }

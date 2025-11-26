@@ -38,12 +38,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request,response));
     }
     @PostMapping("/logout")
-    @RateLimit(maxRequests = 1, timeWindowMs = 60000)
+    @RateLimit(maxRequests = 5, timeWindowMs = 60000)
     public ResponseEntity<?> logout(HttpServletRequest request,HttpServletResponse response){
         return ResponseEntity.ok(authService.logout(request,response));
     }
     @PostMapping("/refresh-token")
-    @RateLimit(maxRequests = 1, timeWindowMs = 60000)
+    @RateLimit(maxRequests = 5, timeWindowMs = 60000)
     public ResponseEntity<?> refreshToken(HttpServletRequest request){
         return ResponseEntity.ok(authService.refreshAccessToken(request));
     }

@@ -1,7 +1,7 @@
 package com.fackbook.User.Entity;
 
 import com.fackbook.Comment.Entity.Comment;
-import com.fackbook.Friend.Entity.Friend;
+import com.fackbook.Friend.Entity.Friendship;
 import com.fackbook.Group.Entity.Group;
 import com.fackbook.Group.Entity.GroupMember;
 import com.fackbook.Post.Entity.Post;
@@ -91,7 +91,7 @@ public class User implements UserDetails {
 
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Friend> friends;
+    private List<Friendship> friendships;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Post> posts;

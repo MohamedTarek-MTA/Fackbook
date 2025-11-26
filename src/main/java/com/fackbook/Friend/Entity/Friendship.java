@@ -9,13 +9,18 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "friends")
+@Table(name = "friendships", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uk_user_friend_unique",
+                columnNames = {"user_id", "friend_id"}
+        )
+})
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
-public class Friend {
+public class Friendship {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,6 +43,6 @@ public class Friend {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "friend_user_id", nullable = false)
+    @JoinColumn(name = "friend_id", nullable = false)
     private User friend;
 }

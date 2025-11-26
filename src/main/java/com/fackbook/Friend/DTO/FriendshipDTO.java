@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FriendDTO implements Serializable {
+public class FriendshipDTO implements Serializable {
 
     private Long id;
 
