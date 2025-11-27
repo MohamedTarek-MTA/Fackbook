@@ -1,6 +1,7 @@
 package com.fackbook.User.Service;
 
 import com.fackbook.Exception.ImageUploadException;
+import com.fackbook.Shared.Helper.FileHelper;
 import com.fackbook.Shared.Image.UploadImageService;
 import com.fackbook.User.DTO.UserDTO;
 import com.fackbook.User.Entity.User;
@@ -27,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final UploadImageService uploadImageService;
+    private final FileHelper fileHelper;
 
     public Boolean userExistsByEmail(String email){
         return  userRepository.findByEmail(email).isPresent();
@@ -182,14 +183,7 @@ public class UserService {
     @CachePut(value = "usersById",key = "#id")
     public UserDTO updateProfileImage(Long id,MultipartFile image){
         var user = getUserEntityById(id);
-        if(image != null && !image.isEmpty()){
-            try{
-                user.setImageUrl(uploadImageService.uploadMultipartFile(image));
-            }
-            catch (Exception e){
-                throw new ImageUploadException("The Image Uploading Process Failed !",e.getCause());
-            }
-        }
+        user.setImageUrl(fileHelper.generateImageUrl(image));
         user.setUpdatedAt(LocalDateTime.now());
         return UserMapper.toDTO(userRepository.save(user));
     }

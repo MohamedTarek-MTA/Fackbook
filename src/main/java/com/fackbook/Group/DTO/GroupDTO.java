@@ -1,6 +1,8 @@
 package com.fackbook.Group.DTO;
 
 import com.fackbook.User.Enum.Status;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -17,8 +19,10 @@ public class GroupDTO implements Serializable {
 
     private Long id;
 
+    @NotNull
     private Long userId;
 
+    @NotBlank
     private String name;
     private String description;
     private String imageUrl;

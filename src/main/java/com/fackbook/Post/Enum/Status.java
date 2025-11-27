@@ -6,7 +6,7 @@ public enum Status {
     DELETED,
     REPORTED,
     UNDER_REVIEW,
-    REMOVED_BY_MODERATION,
+    REMOVED_BY_ADMIN,
     PENDING_APPROVAL,
     REJECTED
 
