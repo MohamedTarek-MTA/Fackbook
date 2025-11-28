@@ -227,4 +227,11 @@ public class PostService {
     public PostDTO deletedPost(Long userId,Long postId){
         return changePostStatus(userId,postId,Status.DELETED,true);
     }
+
+    public void savePost(Post post){
+        postRepository.save(post);
+    }
+    public Page<PostDTO> getAllPosts(Pageable pageable){
+        return postRepository.findAll(pageable).map(PostMapper::toDTO);
+    }
 }
