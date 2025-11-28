@@ -190,4 +190,7 @@ public class UserService {
     public void saveUser(User user){
          userRepository.save(user);
     }
+    public Page<UserDTO> getAllUsers(Pageable pageable){
+        return userRepository.findAll(pageable).map(UserMapper::toDTO);
+    }
 }

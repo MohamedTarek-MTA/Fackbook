@@ -232,5 +232,7 @@ public class GroupMemberService {
     public Page<GroupMemberDTO> getAllUserMembershipsByUserId(Long userId,Pageable pageable){
         return groupMemberRepository.findByUser_Id(userId,pageable).map(GroupMemberMapper::toDTO);
     }
-
+    public Page<GroupMemberDTO> getAllGroupMembersWithoutAnyConditions(Pageable pageable){
+        return groupMemberRepository.findAll(pageable).map(GroupMemberMapper::toDTO);
+    }
 }
