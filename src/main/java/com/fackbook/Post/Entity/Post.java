@@ -2,13 +2,14 @@ package com.fackbook.Post.Entity;
 
 import com.fackbook.Comment.Entity.Comment;
 import com.fackbook.Group.Entity.Group;
+import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.Privacy;
-import com.fackbook.Post.Enum.Status;
+import com.fackbook.Post.Enum.VisibilityStatus;
+import com.fackbook.Post.Interface.AccessibleContent;
 import com.fackbook.Share.Entity.Share;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -23,12 +24,12 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class Post {
+public class Post implements AccessibleContent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+
     private String content;
     private String imageUrl;
     private String videoUrl;
@@ -46,7 +47,10 @@ public class Post {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private VisibilityStatus visibilityStatus;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private ModerationStatus moderationStatus;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -68,4 +72,27 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = true)
     private Group group;
+
+    @Override
+    public Long getAuthorId() {
+        return this.user.getId();
+    }
+
+    @Override
+    public Long getPostAuthorId() {
+        return this.user.getId();
+    }
+
+    @Override
+    public Long getGroupOwnerId() {
+        return this.group != null ? this.group.getUser().getId(): null;
+    }
+    @Override
+    public VisibilityStatus getVisibilityStatus(){
+        return this.visibilityStatus;
+    }
+    @Override
+    public ModerationStatus getModerationStatus(){
+        return this.moderationStatus;
+    }
 }
