@@ -5,7 +5,8 @@ import com.fackbook.Group.Entity.Group;
 import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.Privacy;
 import com.fackbook.Post.Enum.VisibilityStatus;
-import com.fackbook.Post.Interface.AccessibleContent;
+import com.fackbook.Post.Util.Interface.AccessibleContent;
+import com.fackbook.Post.Util.Interface.MediaAttachable;
 import com.fackbook.Share.Entity.Share;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
@@ -24,7 +25,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class Post implements AccessibleContent {
+public class Post implements AccessibleContent, MediaAttachable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -94,5 +95,21 @@ public class Post implements AccessibleContent {
     @Override
     public ModerationStatus getModerationStatus(){
         return this.moderationStatus;
+    }
+    @Override
+    public String getImageUrl(){
+        return imageUrl;
+    }
+    @Override
+    public void setImageUrl(String url){
+        this.imageUrl=url;
+    }
+    @Override
+    public String getVideoUrl(){
+        return videoUrl;
+    }
+    @Override
+    public void setVideoUrl(String url){
+        this.videoUrl=url;
     }
 }

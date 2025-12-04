@@ -1,6 +1,6 @@
-package com.fackbook.Post.Service;
+package com.fackbook.Post.Util.Service;
 
-import com.fackbook.Post.Interface.AccessibleContent;
+import com.fackbook.Post.Util.Interface.AccessibleContent;
 import com.fackbook.User.Enum.Role;
 import com.fackbook.User.Service.UserService;
 import lombok.RequiredArgsConstructor;

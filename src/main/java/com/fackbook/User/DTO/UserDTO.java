@@ -34,6 +34,7 @@ public class UserDTO implements Serializable {
 
     private Boolean enabled;
     private Boolean deleted;
+    private Boolean removeImage;
 
     private LocalDateTime lastLoginDate;
     private LocalDateTime createdAt;

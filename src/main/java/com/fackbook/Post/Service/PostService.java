@@ -1,6 +1,7 @@
 package com.fackbook.Post.Service;
 
 
+import com.fackbook.Friend.Service.FriendService;
 import com.fackbook.Group.Entity.Group;
 import com.fackbook.Group.Service.GroupMemberService;
 import com.fackbook.Group.Service.GroupService;
@@ -11,7 +12,10 @@ import com.fackbook.Post.Enum.Privacy;
 import com.fackbook.Post.Enum.VisibilityStatus;
 import com.fackbook.Post.Mapper.PostMapper;
 import com.fackbook.Post.Repository.PostRepository;
+import com.fackbook.Post.Util.Service.AccessibilityService;
+import com.fackbook.Post.Util.Service.MediaManager;
 import com.fackbook.Shared.Helper.FileHelper;
+import com.fackbook.User.Enum.Role;
 import com.fackbook.User.Service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +39,10 @@ public class PostService {
     private final UserService userService;
     private final FileHelper fileHelper;
     private final GroupService groupService;
-    private final GroupMemberService groupMemberService;
     private final AccessibilityService accessibilityService;
+    private final FriendService friendService;
+    private final GroupMemberService groupMemberService;
+    private final MediaManager mediaManager;
 
     public Post getPostEntityById(Long id){
         return postRepository.findById(id).orElseThrow(()->
@@ -47,8 +53,19 @@ public class PostService {
                     post -> {
                         accessibilityService.validateVisibility(post,userId);
                         accessibilityService.validateModeration(post,userId);
+                        validatePrivacy(userId,post);
                        return PostMapper.toDTO(post);
                     }
+        );
+    }
+    public Page<PostDTO> getPostsByUserName(Long userId,String userName, Pageable pageable){
+        return postRepository.findByUser_NameContainingIgnoreCase(userName,pageable).map(
+                post -> {
+                    accessibilityService.validateVisibility(post,userId);
+                    accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
+                    return PostMapper.toDTO(post);
+                }
         );
     }
 
@@ -57,6 +74,7 @@ public class PostService {
                 post -> {
                     accessibilityService.validateVisibility(post,userId);
                     accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
                     return PostMapper.toDTO(post);
                 }
         );
@@ -66,6 +84,7 @@ public class PostService {
                 post -> {
                     accessibilityService.validateVisibility(post,userId);
                     accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
                     return PostMapper.toDTO(post);
                 }
         );
@@ -75,6 +94,7 @@ public class PostService {
                 post -> {
                     accessibilityService.validateVisibility(post,userId);
                     accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
                     return PostMapper.toDTO(post);
                 }
         );
@@ -84,6 +104,7 @@ public class PostService {
                 post -> {
                     accessibilityService.validateVisibility(post,userId);
                     accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
                     return PostMapper.toDTO(post);
                 }
         );
@@ -93,6 +114,7 @@ public class PostService {
                 post -> {
                     accessibilityService.validateVisibility(post,userId);
                     accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
                     return PostMapper.toDTO(post);
                 }
         );
@@ -103,6 +125,7 @@ public class PostService {
                 post -> {
                     accessibilityService.validateVisibility(post,userId);
                     accessibilityService.validateModeration(post,userId);
+                    validatePrivacy(userId,post);
                     return PostMapper.toDTO(post);
                 }
         );
@@ -153,6 +176,7 @@ public class PostService {
         var post = getPostEntityById(postId);
         accessibilityService.validateModeration(post,userId);
         accessibilityService.validateVisibility(post,userId);
+        validatePrivacy(userId,post);
         return PostMapper.toDTO(post);
     }
     @Transactional
@@ -195,6 +219,7 @@ public class PostService {
         var post = getPostEntityById(postId);
         accessibilityService.validateModeration(post,userId);
         accessibilityService.validateVisibility(post,userId);
+        validatePrivacy(userId,post);
         if(!user.getId().equals(post.getUser().getId())){
             throw new IllegalArgumentException("You can't change post privacy because it's not yours !!");
         }
@@ -208,6 +233,7 @@ public class PostService {
         var post = getPostEntityById(postId);
         accessibilityService.validateVisibility(post,userId);
         accessibilityService.validateModeration(post,userId);
+        validatePrivacy(userId,post);
         Optional.ofNullable(visibilityStatus).ifPresent(post::setVisibilityStatus);
         Optional.ofNullable(moderationStatus).ifPresent(post::setModerationStatus);
         Optional.ofNullable(deleted).ifPresent(post::setDeleted);
@@ -224,8 +250,10 @@ public class PostService {
         Group group = null;
         accessibilityService.validateVisibility(post,userId);
         accessibilityService.validateModeration(post,userId);
-        var imageUrl = fileHelper.generateImageUrl(image);
-        var videoUrl = fileHelper.generateVideoUrl(video,"Uploaded By "+user.getName()+" @"+user.getId(),"Description: "+dto.getContent());
+        validatePrivacy(userId,post);
+        mediaManager.handleMedia(post,image,video,dto.getRemoveImage(),dto.getRemoveVideo());
+        var imageUrl = post.getImageUrl();
+        var videoUrl = post.getVideoUrl();
         boolean isContentNull = dto.getContent() == null || dto.getContent().isBlank();
         boolean isImageNull = imageUrl == null || imageUrl.isBlank();
         boolean isVideoNull = videoUrl == null || videoUrl.isBlank();
@@ -235,8 +263,6 @@ public class PostService {
         if(groupId != null){
             group = groupService.getGroupEntityByGroupId(groupId);
         }
-        if (!isImageNull) post.setImageUrl(imageUrl);
-        if (!isVideoNull) post.setVideoUrl(videoUrl);
         Optional.ofNullable(group).ifPresent(post::setGroup);
         Optional.ofNullable(dto.getContent()).ifPresent(post::setContent);
         Optional.ofNullable(dto.getPrivacy()).ifPresent(post::setPrivacy);
@@ -296,5 +322,59 @@ public class PostService {
     @CacheEvict(value = "postsByUserAndPostIDs",key = "#userId + '-' + #postId")
     public PostDTO rejectedPost(Long userId,Long postId){
         return changePostStatus(userId,postId,VisibilityStatus.REMOVED_BY_ADMIN,ModerationStatus.REJECTED,true);
+    }
+
+    private void validatePrivacy(Long userId, Post post) {
+
+        var user = userService.getUserEntityById(userId);
+
+
+        Long authorId = post.getAuthorId();
+        Long groupOwnerId = post.getGroupOwnerId();
+
+        var friendship = friendService.getFriendshipEntityByUserIdAndFriendId(authorId, userId);
+        var groupMember = groupMemberService.getGroupMemberEntityByUserIdAndGroupId(userId, groupOwnerId);
+
+        boolean isAuthor = userId.equals(authorId);
+        boolean isSystemAdmin = user.getRole() == Role.SYSTEM_ADMIN;
+        boolean isGroupAdmin = groupOwnerId != null
+                && groupOwnerId.equals(userId)
+                && user.getRole() == Role.GROUP_ADMIN;
+
+
+        if (isAuthor || isSystemAdmin || isGroupAdmin) return;
+
+
+        switch (post.getPrivacy()) {
+
+            case PUBLIC, GROUP_PUBLIC -> {
+                return;
+            }
+
+            case FRIENDS_ONLY -> {
+                if (friendship.isPresent()) return;
+                break;
+            }
+
+            case PRIVATE -> {
+
+                break;
+            }
+
+            case GROUP_MEMBERS -> {
+                if (groupMember.isPresent()) return;
+                break;
+            }
+
+            default -> throw new IllegalArgumentException(
+                    "Unknown privacy type: " + post.getPrivacy()
+            );
+        }
+
+        throw new IllegalArgumentException("You are not allowed to view this post.");
+    }
+
+    public void savePost(Post post){
+        postRepository.save(post);
     }
 }

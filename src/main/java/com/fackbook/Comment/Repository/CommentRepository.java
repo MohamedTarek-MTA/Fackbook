@@ -2,7 +2,6 @@ package com.fackbook.Comment.Repository;
 
 import com.fackbook.Comment.Entity.Comment;
 import com.fackbook.Post.Enum.ModerationStatus;
-import com.fackbook.Post.Enum.Status;
 import com.fackbook.Post.Enum.VisibilityStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,4 +15,5 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
     Optional<Comment> findByUser_IdAndPost_Id(Long userId,Long postId);
     Page<Comment> findByModerationStatus(ModerationStatus moderationStatus, Pageable pageable);
     Page<Comment> findByVisibilityStatus(VisibilityStatus visibilityStatus,Pageable pageable);
+    Page<Comment> findByUser_NameContainingIgnoreCase(String name,Pageable pageable);
 }

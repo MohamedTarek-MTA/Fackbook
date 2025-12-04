@@ -25,6 +25,8 @@ public class CommentMapper {
                 .updatedAt(comment.getUpdatedAt())
                 .deletedAt(comment.getDeletedAt())
                 .deleted(comment.getDeleted())
+                .removeImage(null)
+                .removeVideo(null)
                 .build();
     }
 

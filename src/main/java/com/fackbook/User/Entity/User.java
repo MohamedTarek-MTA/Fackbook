@@ -5,6 +5,7 @@ import com.fackbook.Friend.Entity.Friendship;
 import com.fackbook.Group.Entity.Group;
 import com.fackbook.Group.Entity.GroupMember;
 import com.fackbook.Post.Entity.Post;
+import com.fackbook.Post.Util.Interface.MediaAttachable;
 import com.fackbook.React.Entity.React;
 import com.fackbook.Reply.Entity.Reply;
 import com.fackbook.Report.Entity.Report;
@@ -39,7 +40,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class User implements UserDetails {
+public class User implements UserDetails, MediaAttachable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -142,4 +143,23 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return enabled != null && enabled; }
+
+    @Override
+    public String getImageUrl(){
+        return imageUrl;
+    }
+    @Override
+    public void setImageUrl(String url){
+        this.imageUrl = url;
+    }
+
+    @Override
+    public String getVideoUrl() {
+        return null;
+    }
+
+    @Override
+    public void setVideoUrl(String url) {
+        //nothing
+    }
 }
