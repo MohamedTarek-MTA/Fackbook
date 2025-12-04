@@ -378,9 +378,6 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public void savePost(Post post){
-        postRepository.save(post);
-    }
     public Page<PostDTO> getAllPosts(Pageable pageable){
         return postRepository.findAll(pageable).map(PostMapper::toDTO);
     }

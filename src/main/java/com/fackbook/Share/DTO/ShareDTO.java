@@ -16,12 +16,9 @@ public class ShareDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
     private Long userId;
-    @NotNull
     private Long postId;
 
-    @NotBlank
     private String content;
 
     private LocalDateTime createdAt;
