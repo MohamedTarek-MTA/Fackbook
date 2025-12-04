@@ -1,4 +1,4 @@
-package com.fackbook.Post.Interface;
+package com.fackbook.Post.Util.Interface;
 
 import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.VisibilityStatus;

@@ -1,6 +1,7 @@
 package com.fackbook.User.Service;
 
 import com.fackbook.Exception.ImageUploadException;
+import com.fackbook.Post.Util.Service.MediaManager;
 import com.fackbook.Shared.Helper.FileHelper;
 import com.fackbook.Shared.Image.UploadImageService;
 import com.fackbook.User.DTO.UserDTO;
@@ -28,7 +29,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final FileHelper fileHelper;
+    private final MediaManager mediaManager;
 
     public Boolean userExistsByEmail(String email){
         return  userRepository.findByEmail(email).isPresent();
@@ -167,7 +168,7 @@ public class UserService {
     }
     @Transactional
     @CachePut(value = "usersById",key = "#id")
-    public UserDTO updateUser(Long id,UserDTO dto){
+    public UserDTO updateUser(Long id,UserDTO dto,MultipartFile image){
         var user = getUserEntityById(id);
 
         Optional.ofNullable(dto.getName()).ifPresent(user::setName);
@@ -175,15 +176,7 @@ public class UserService {
         Optional.ofNullable(dto.getBio()).ifPresent(user::setBio);
         Optional.ofNullable(dto.getBirthdate()).ifPresent(user::setBirthdate);
         Optional.ofNullable(dto.getGender()).ifPresent(user::setGender);
-
-        user.setUpdatedAt(LocalDateTime.now());
-        return UserMapper.toDTO(userRepository.save(user));
-    }
-    @Transactional
-    @CachePut(value = "usersById",key = "#id")
-    public UserDTO updateProfileImage(Long id,MultipartFile image){
-        var user = getUserEntityById(id);
-        user.setImageUrl(fileHelper.generateImageUrl(image));
+        mediaManager.handleMedia(user,image,null,dto.getRemoveImage(),null);
         user.setUpdatedAt(LocalDateTime.now());
         return UserMapper.toDTO(userRepository.save(user));
     }

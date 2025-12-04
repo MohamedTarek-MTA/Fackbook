@@ -29,6 +29,8 @@ public class PostMapper {
                 .updatedAt(post.getUpdatedAt())
                 .deletedAt(post.getDeletedAt())
                 .deleted(post.getDeleted())
+                .removeImage(null)
+                .removeVideo(null)
                 .build();
     }
 

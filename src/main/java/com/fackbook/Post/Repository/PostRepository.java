@@ -16,4 +16,5 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findByModerationStatus(ModerationStatus moderationStatus, Pageable pageable);
     Page<Post> findByGroup_NameIgnoreCase(String name,Pageable pageable);
     Page<Post> findByUser_IdAndGroup_Id(Long userId, Long groupId, Pageable pageable);
+    Page<Post> findByUser_NameContainingIgnoreCase(String name,Pageable pageable);
 }

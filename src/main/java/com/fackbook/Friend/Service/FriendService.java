@@ -31,7 +31,7 @@ public class FriendService {
     public Page<FriendshipDTO> getFriendFriendshipsByFriendId(Long friendId,Pageable pageable){
         return friendshipRepository.findByFriend_idAndStatus(friendId,Status.FRIENDS,pageable).map(FriendshipMapper::toDTO);
     }
-    private Optional<Friendship> getFriendshipEntityByUserIdAndFriendId(Long userId, Long friendId){
+    public Optional<Friendship> getFriendshipEntityByUserIdAndFriendId(Long userId, Long friendId){
         if(userId.equals(friendId)){
             throw new IllegalArgumentException("User Couldn't be friend with himself !!");
         }

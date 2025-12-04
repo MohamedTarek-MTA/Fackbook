@@ -19,11 +19,14 @@ public class ReplyMapper {
                 .content(reply.getContent())
                 .imageUrl(reply.getImageUrl())
                 .videoUrl(reply.getVideoUrl())
-                .status(reply.getStatus())
+                .visibilityStatus(reply.getVisibilityStatus())
+                .moderationStatus(reply.getModerationStatus())
                 .createdAt(reply.getCreatedAt())
                 .deletedAt(reply.getDeletedAt())
                 .updatedAt(reply.getUpdatedAt())
                 .deleted(reply.getDeleted())
+                .removeImage(null)
+                .removeVideo(null)
                 .build();
     }
 
@@ -37,7 +40,8 @@ public class ReplyMapper {
                 .content(replyDTO.getContent())
                 .imageUrl(replyDTO.getImageUrl())
                 .videoUrl(replyDTO.getVideoUrl())
-                .status(replyDTO.getStatus())
+                .visibilityStatus(replyDTO.getVisibilityStatus())
+                .moderationStatus(replyDTO.getModerationStatus())
                 .createdAt(replyDTO.getCreatedAt())
                 .deletedAt(replyDTO.getDeletedAt())
                 .updatedAt(replyDTO.getUpdatedAt())

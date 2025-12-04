@@ -42,4 +42,6 @@ public class PostDTO implements Serializable {
     private LocalDateTime deletedAt;
 
     private Boolean deleted;
+    private Boolean removeImage;
+    private Boolean removeVideo;
 }

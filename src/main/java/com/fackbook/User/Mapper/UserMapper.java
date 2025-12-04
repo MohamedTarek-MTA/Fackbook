@@ -22,6 +22,7 @@ public class UserMapper {
                 .bio(user.getBio())
                 .age(Helper.getAge(user.getBirthdate()))
                 .imageUrl(user.getImageUrl())
+                .removeImage(null)
                 .birthdate(user.getBirthdate())
                 .gender(user.getGender())
                 .role(user.getRole())
