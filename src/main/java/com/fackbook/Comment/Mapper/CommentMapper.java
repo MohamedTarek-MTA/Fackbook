@@ -19,11 +19,14 @@ public class CommentMapper {
                 .content(comment.getContent())
                 .imageUrl(comment.getImageUrl())
                 .videoUrl(comment.getVideoUrl())
-                .status(comment.getStatus())
+                .visibilityStatus(comment.getVisibilityStatus())
+                .moderationStatus(comment.getModerationStatus())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .deletedAt(comment.getDeletedAt())
                 .deleted(comment.getDeleted())
+                .removeImage(null)
+                .removeVideo(null)
                 .build();
     }
 
@@ -37,7 +40,8 @@ public class CommentMapper {
                 .content(commentDTO.getContent())
                 .imageUrl(commentDTO.getImageUrl())
                 .videoUrl(commentDTO.getVideoUrl())
-                .status(commentDTO.getStatus())
+                .visibilityStatus(commentDTO.getVisibilityStatus())
+                .moderationStatus(commentDTO.getModerationStatus())
                 .createdAt(commentDTO.getCreatedAt())
                 .updatedAt(commentDTO.getUpdatedAt())
                 .deletedAt(commentDTO.getDeletedAt())

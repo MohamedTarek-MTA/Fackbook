@@ -1,6 +1,7 @@
 package com.fackbook.Comment.DTO;
 
-import com.fackbook.Post.Enum.Status;
+import com.fackbook.Post.Enum.ModerationStatus;
+import com.fackbook.Post.Enum.VisibilityStatus;
 import lombok.*;
 
 import java.io.Serializable;
@@ -22,11 +23,15 @@ public class CommentDTO implements Serializable {
     private String imageUrl;
     private String videoUrl;
 
-    private Status status;
+
+    private VisibilityStatus visibilityStatus;
+    private ModerationStatus moderationStatus;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     private Boolean deleted;
+    private Boolean removeImage;
+    private Boolean removeVideo;
 }

@@ -1,9 +1,8 @@
 package com.fackbook.Post.DTO;
 
+import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.Privacy;
-import com.fackbook.Post.Enum.Status;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.fackbook.Post.Enum.VisibilityStatus;
 import lombok.*;
 
 import java.io.Serializable;
@@ -19,11 +18,11 @@ public class PostDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
+
     private Long userId;
     private Long groupId;
 
-    @NotBlank
+
     private String content;
     private String imageUrl;
     private String videoUrl;
@@ -32,14 +31,17 @@ public class PostDTO implements Serializable {
     private BigInteger numberOfComments;
     private BigInteger numberOfShares;
 
-    @NotNull
+
     private Privacy privacy;
-    @NotNull
-    private Status status;
+
+    private VisibilityStatus visibilityStatus;
+    private ModerationStatus moderationStatus;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
     private Boolean deleted;
+    private Boolean removeImage;
+    private Boolean removeVideo;
 }

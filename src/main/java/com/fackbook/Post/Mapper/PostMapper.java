@@ -23,11 +23,14 @@ public class PostMapper {
                 .numberOfComments(post.getNumberOfComments())
                 .numberOfShares(post.getNumberOfShares())
                 .privacy(post.getPrivacy())
-                .status(post.getStatus())
+                .visibilityStatus(post.getVisibilityStatus())
+                .moderationStatus(post.getModerationStatus())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .deletedAt(post.getDeletedAt())
                 .deleted(post.getDeleted())
+                .removeImage(null)
+                .removeVideo(null)
                 .build();
     }
 
@@ -45,7 +48,8 @@ public class PostMapper {
                 .numberOfComments(postDTO.getNumberOfComments())
                 .numberOfShares(postDTO.getNumberOfShares())
                 .privacy(postDTO.getPrivacy())
-                .status(postDTO.getStatus())
+                .visibilityStatus(postDTO.getVisibilityStatus())
+                .moderationStatus(postDTO.getModerationStatus())
                 .createdAt(postDTO.getCreatedAt())
                 .updatedAt(postDTO.getUpdatedAt())
                 .deletedAt(postDTO.getDeletedAt())

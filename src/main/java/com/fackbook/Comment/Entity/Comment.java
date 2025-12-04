@@ -1,12 +1,14 @@
 package com.fackbook.Comment.Entity;
 
 import com.fackbook.Post.Entity.Post;
-import com.fackbook.Post.Enum.Status;
+import com.fackbook.Post.Enum.ModerationStatus;
+import com.fackbook.Post.Enum.VisibilityStatus;
+import com.fackbook.Post.Util.Interface.AccessibleContent;
+import com.fackbook.Post.Util.Interface.MediaAttachable;
 import com.fackbook.Reply.Entity.Reply;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -21,12 +23,12 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class Comment {
+public class Comment implements AccessibleContent, MediaAttachable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+
     private String content;
     private String imageUrl;
     private String videoUrl;
@@ -40,7 +42,10 @@ public class Comment {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private VisibilityStatus visibilityStatus;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private ModerationStatus moderationStatus;
 
     @Min(0)
     private BigInteger numberOfReacts = BigInteger.ZERO;
@@ -57,4 +62,43 @@ public class Comment {
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reply> replies;
+
+    @Override
+    public Long getAuthorId() {
+        return this.user.getId();
+    }
+
+    @Override
+    public Long getPostAuthorId() {
+        return this.post.getUser().getId();
+    }
+
+    @Override
+    public Long getGroupOwnerId() {
+        return this.post.getGroup() != null ? this.post.getGroup().getUser().getId():null;
+    }
+    @Override
+    public VisibilityStatus getVisibilityStatus(){
+        return this.visibilityStatus;
+    }
+    @Override
+    public ModerationStatus getModerationStatus(){
+        return this.moderationStatus;
+    }
+    @Override
+    public String getImageUrl(){
+        return imageUrl;
+    }
+    @Override
+    public void setImageUrl(String url){
+        this.imageUrl=url;
+    }
+    @Override
+    public String getVideoUrl(){
+        return videoUrl;
+    }
+    @Override
+    public void setVideoUrl(String url){
+        this.videoUrl=url;
+    }
 }
