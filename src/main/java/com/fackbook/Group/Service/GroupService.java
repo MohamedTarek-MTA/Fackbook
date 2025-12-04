@@ -123,4 +123,7 @@ public class GroupService {
         group.setUpdatedAt(LocalDateTime.now());
         return GroupMapper.toDTO(groupRepository.save(group));
     }
+    public Page<GroupDTO> getAllGroups(Pageable pageable){
+        return groupRepository.findAll(pageable).map(GroupMapper::toDTO);
+    }
 }

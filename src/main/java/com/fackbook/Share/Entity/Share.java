@@ -5,6 +5,8 @@ import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "shares")
 @AllArgsConstructor
@@ -27,4 +29,6 @@ public class Share {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 }
