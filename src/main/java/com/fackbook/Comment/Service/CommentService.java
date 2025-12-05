@@ -4,11 +4,17 @@ import com.fackbook.Comment.DTO.CommentDTO;
 import com.fackbook.Comment.Entity.Comment;
 import com.fackbook.Comment.Mapper.CommentMapper;
 import com.fackbook.Comment.Repository.CommentRepository;
+import com.fackbook.Group.Entity.Group;
+import com.fackbook.Group.Service.GroupService;
 import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.VisibilityStatus;
 import com.fackbook.Post.Util.Service.AccessibilityService;
 import com.fackbook.Post.Service.PostService;
 import com.fackbook.Post.Util.Service.MediaManager;
+import com.fackbook.Request.DTO.RequestDTO;
+import com.fackbook.Request.Enum.RequestActionType;
+import com.fackbook.Request.Enum.RequestTargetType;
+import com.fackbook.Request.Service.RequestService;
 import com.fackbook.Shared.Helper.FileHelper;
 import com.fackbook.User.Service.UserService;
 import jakarta.transaction.Transactional;
@@ -33,6 +39,8 @@ public class CommentService {
     private final FileHelper fileHelper;
     private final AccessibilityService accessibilityService;
     private final MediaManager mediaManager;
+    private final GroupService groupService;
+    private final RequestService requestService;
 
     public Comment getCommentEntityById(Long commentId){
        return commentRepository.findById(commentId).orElseThrow(()->
@@ -130,6 +138,7 @@ public class CommentService {
     public CommentDTO createNewComment(Long userId, Long postId, CommentDTO dto, MultipartFile image,MultipartFile video){
         var user = userService.getUserEntityById(userId);
         var post = postService.getPostEntityById(postId);
+        var moderationStatus = ModerationStatus.NONE;
         var imageUrl = fileHelper.generateImageUrl(image);
         var videoUrl = fileHelper.generateVideoUrl(video,"Uploaded By "+user.getName()+" @"+user.getId(),dto.getContent());
         boolean isContentNull = dto.getContent() == null || dto.getContent().isBlank();
@@ -137,6 +146,9 @@ public class CommentService {
         boolean isVideoNull = videoUrl == null || videoUrl.isBlank();
         if(isContentNull && isImageNull && isVideoNull){
             throw new IllegalArgumentException("Comment Couldn't be empty !!");
+        }
+        if(post.getGroup() != null){
+            moderationStatus = handleGroupApprovalForComment(userId,post.getGroup().getId());
         }
         Comment comment = Comment.builder()
                 .content(dto.getContent())
@@ -149,7 +161,7 @@ public class CommentService {
                 .deletedAt(null)
                 .numberOfReplies(BigInteger.ZERO)
                 .numberOfReacts(BigInteger.ZERO)
-                .moderationStatus(post.getGroup() != null ? ModerationStatus.PENDING_APPROVAL:ModerationStatus.NONE)
+                .moderationStatus(moderationStatus)
                 .visibilityStatus(dto.getVisibilityStatus() != null ? dto.getVisibilityStatus() : VisibilityStatus.ACTIVE)
                 .build();
         commentRepository.save(comment);
@@ -159,6 +171,32 @@ public class CommentService {
         }
         postService.savePost(post);
         return CommentMapper.toDTO(comment);
+    }
+    private ModerationStatus handleGroupApprovalForComment(Long userId, Long groupId) {
+
+        if (groupId == null) {
+            return ModerationStatus.NONE;
+        }
+
+        Group group = groupService.getGroupEntityByGroupId(groupId);
+
+        return switch (group.getApprovalMode()) {
+            case NONE -> ModerationStatus.NONE;
+
+            case POST_ONLY, POST_AND_COMMENT -> {
+                requestService.createNewRequest(
+                        userId,
+                        groupId,
+                        RequestDTO.builder()
+                                .actionType(RequestActionType.CONTENT_APPROVAL)
+                                .targetType(RequestTargetType.COMMENT)
+                                .build()
+                );
+                yield ModerationStatus.PENDING_APPROVAL;
+
+            }
+            default -> throw new IllegalArgumentException("Unhandled Approval Mode: " + group.getApprovalMode());
+        };
     }
     @Transactional
     @CachePut(value = "commentsByUserAndCommentIDs",key = "#userId + '-' + #commentId")
@@ -177,22 +215,33 @@ public class CommentService {
         if(isContentNull && isImageNull && isVideoNull){
             throw new IllegalArgumentException("Comment Couldn't be empty !!");
         }
-        Optional.ofNullable(dto.getContent()).ifPresent(comment::setContent);
-        comment.setUpdatedAt(LocalDateTime.now());
-        VisibilityStatus newVisibilityStatus = dto.getVisibilityStatus() != null ? dto.getVisibilityStatus() : VisibilityStatus.ACTIVE;
-        ModerationStatus newModerationStatus = post.getGroup() != null ? ModerationStatus.PENDING_APPROVAL : ModerationStatus.NONE;
+        ModerationStatus newModerationStatus = post.getGroup() != null
+                ? handleGroupApprovalForComment(userId, post.getGroup().getId())
+                : ModerationStatus.NONE;
+
+        VisibilityStatus newVisibilityStatus = dto.getVisibilityStatus() != null
+                ? dto.getVisibilityStatus()
+                : VisibilityStatus.ACTIVE;
+
 
         boolean wasCounted = comment.getModerationStatus() == ModerationStatus.NONE
                 && comment.getVisibilityStatus() == VisibilityStatus.ACTIVE;
+
         boolean willBeCounted = newModerationStatus == ModerationStatus.NONE
                 && newVisibilityStatus == VisibilityStatus.ACTIVE;
 
-        comment.setVisibilityStatus(newVisibilityStatus);
-        comment.setModerationStatus(newModerationStatus);
-
         BigInteger delta = BigInteger.valueOf((willBeCounted ? 1 : 0) - (wasCounted ? 1 : 0));
-        post.setNumberOfComments(post.getNumberOfComments().add(delta));
-        postService.savePost(post);
+        if (delta.compareTo(BigInteger.ZERO) != 0) {
+            post.setNumberOfComments(post.getNumberOfComments().add(delta));
+            postService.savePost(post);
+        }
+
+
+        Optional.ofNullable(dto.getContent()).ifPresent(comment::setContent);
+        comment.setUpdatedAt(LocalDateTime.now());
+        comment.setModerationStatus(newModerationStatus);
+        comment.setVisibilityStatus(newVisibilityStatus);
+
         return CommentMapper.toDTO(comment);
     }
     @Transactional

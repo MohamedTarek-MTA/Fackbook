@@ -1,5 +1,7 @@
 package com.fackbook.Group.Entity;
 
+import com.fackbook.Group.Enum.ApprovalMode;
+import com.fackbook.Group.Enum.JoinPolicy;
 import com.fackbook.User.Entity.User;
 import com.fackbook.User.Enum.Status;
 import com.fackbook.Post.Entity.Post;
@@ -46,6 +48,12 @@ public class Group {
     @NotNull
     @Enumerated(EnumType.STRING)
     private Status status;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private ApprovalMode approvalMode;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private JoinPolicy joinPolicy;
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Post> posts;

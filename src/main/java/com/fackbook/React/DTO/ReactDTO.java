@@ -1,7 +1,7 @@
 package com.fackbook.React.DTO;
 
 import com.fackbook.React.Enum.ReactType;
-import com.fackbook.Request.Enum.TargetType;
+import com.fackbook.Request.Enum.RequestTargetType;
 import lombok.*;
 
 import java.io.Serializable;
@@ -19,7 +19,7 @@ public class ReactDTO implements Serializable {
     private Long userId;
     private Long targetId;
 
-    private TargetType targetType;
+    private RequestTargetType targetType;
     private ReactType reactType;
 
     private LocalDateTime createdAt;

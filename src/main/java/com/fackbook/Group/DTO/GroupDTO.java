@@ -1,5 +1,7 @@
 package com.fackbook.Group.DTO;
 
+import com.fackbook.Group.Enum.ApprovalMode;
+import com.fackbook.Group.Enum.JoinPolicy;
 import com.fackbook.User.Enum.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +21,7 @@ public class GroupDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
+
     private Long userId;
 
     @NotBlank
@@ -30,6 +32,8 @@ public class GroupDTO implements Serializable {
     private BigInteger numberOfMembers;
 
     private Status status;
+    private ApprovalMode approvalMode;
+    private JoinPolicy joinPolicy;
 
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;

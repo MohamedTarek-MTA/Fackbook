@@ -1,7 +1,9 @@
 package com.fackbook.Request.DTO;
 
+import com.fackbook.Request.Enum.RequestActionType;
+import com.fackbook.Request.Enum.RequestTargetType;
 import com.fackbook.Request.Enum.Status;
-import com.fackbook.Request.Enum.TargetType;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -19,7 +21,10 @@ public class RequestDTO implements Serializable {
     private Long userId;
     private Long targetId;
 
-    private TargetType targetType;
+    @NotNull
+    private RequestTargetType targetType;
+    @NotNull
+    private RequestActionType actionType;
     private Status status;
 
     private LocalDateTime createdAt;
