@@ -18,6 +18,7 @@ public class ReportDTO implements Serializable {
 
     private Long userId;
     private Long targetId;
+    private Long reviewerId;
 
     private String content;
     private String imageUrl;

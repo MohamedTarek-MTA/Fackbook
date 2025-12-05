@@ -1,10 +1,10 @@
 package com.fackbook.Report.Entity;
 
+import com.fackbook.Post.Util.Interface.MediaAttachable;
 import com.fackbook.Request.Enum.RequestTargetType;
 import com.fackbook.Request.Enum.Status;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -25,7 +25,6 @@ public class Report {
     @NotNull
     private Long targetId;
 
-    @NotBlank
     private String content;
     private String imageUrl;
     private String videoUrl;
@@ -48,4 +47,9 @@ public class Report {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewer_id", nullable = true)
+    private User reviewer;
+
 }
