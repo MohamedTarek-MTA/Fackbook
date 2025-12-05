@@ -17,6 +17,7 @@ public class ReportMapper {
                 .userId(report.getUser() != null ? report.getUser().getId() : null)
                 .targetId(report.getTargetId())
                 .content(report.getContent())
+                .reviewerId(report.getReviewer()!= null? report.getReviewer().getId() : null)
                 .imageUrl(report.getImageUrl())
                 .videoUrl(report.getVideoUrl())
                 .status(report.getStatus())
