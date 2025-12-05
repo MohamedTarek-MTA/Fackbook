@@ -1,7 +1,7 @@
 package com.fackbook.React.Entity;
 
 import com.fackbook.React.Enum.ReactType;
-import com.fackbook.Request.Enum.TargetType;
+import com.fackbook.Request.Enum.RequestTargetType;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -30,7 +30,7 @@ public class React {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private TargetType targetType;
+    private RequestTargetType targetType;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;

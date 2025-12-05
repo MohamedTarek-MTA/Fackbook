@@ -6,6 +6,9 @@ import com.fackbook.Friend.Entity.Friendship;
 import com.fackbook.Friend.Enum.Status;
 import com.fackbook.Friend.Mapper.FriendshipMapper;
 import com.fackbook.Friend.Repository.FriendshipRepository;
+import com.fackbook.Request.Entity.Request;
+import com.fackbook.Request.Enum.RequestActionType;
+import com.fackbook.Request.Service.RequestService;
 import com.fackbook.User.Service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class FriendService {
     private final FriendshipRepository friendshipRepository;
     private final UserService userService;
+    private final RequestService requestService;
 
     public Page<FriendshipDTO> getUserFriendshipsByUserId(Long userId, Pageable pageable){
         return friendshipRepository.findByUser_IdAndStatus(userId, Status.FRIENDS,pageable).map(FriendshipMapper::toDTO);
@@ -39,9 +43,7 @@ public class FriendService {
         Long actualFriendId = Long.max(userId,friendId);
         return friendshipRepository.findByUser_IdAndFriend_Id(actualUserId,actualFriendId);
     }
-    @Cacheable(value = "friendshipsByUserAndFriendIDs",
-            key = "T(java.lang.Math).min(#userId,#friendId) + '-' + T(java.lang.Math).max(#userId,#friendId)")
-    public FriendshipDTO getFriendshipByUserIdAndFriendId(Long userId,Long friendId){
+      public FriendshipDTO getFriendshipByUserIdAndFriendId(Long userId,Long friendId){
         var friendship = getFriendshipEntityByUserIdAndFriendId(userId,friendId).
                 orElseThrow(()->new IllegalArgumentException("Friendship Not Found !"));
         if(friendship.getStatus().equals(Status.NOT_FRIENDS)){
@@ -49,7 +51,7 @@ public class FriendService {
         }
         return FriendshipMapper.toDTO(friendship);
     }
-    @Cacheable(value = "friendshipsByFriendshipId",key = "#friendshipId")
+
     public FriendshipDTO getFriendshipByFriendshipId(Long friendshipId){
         return FriendshipMapper.toDTO(friendshipRepository.findById(friendshipId)
                 .orElseThrow(()->new IllegalArgumentException("Friendship Not Found !")));
@@ -62,10 +64,17 @@ public class FriendService {
     }
 
     @Transactional
-    @CacheEvict(value = "friendshipsByUserAndFriendIDs",
-            key = "T(java.lang.Math).min(#userId,#friendId) + '-' + T(java.lang.Math).max(#userId,#friendId)")
-    public FriendshipDTO createFriendship(Long userId,Long friendId){
+      public FriendshipDTO approveFriendshipRequest(Long requestId){
+        var request = requestService.getRequestEntityById(requestId);
+        var userId = request.getUser().getId();
+        var friendId = request.getTargetId();
         var friendship = getFriendshipEntityByUserIdAndFriendId(userId,friendId);
+        if(!request.getStatus().equals(com.fackbook.Request.Enum.Status.PENDING)){
+            throw new IllegalArgumentException("Sorry The Friendship Request is already "+request.getStatus().name());
+        }
+        request.setStatus(com.fackbook.Request.Enum.Status.ACCEPTED);
+        requestService.saveRequest(request);
+
         if(friendship.isEmpty()){
             Friendship newFriendship = Friendship.builder()
                     .user(userService.getUserEntityById(userId))
@@ -88,9 +97,7 @@ public class FriendService {
             }
     }
     @Transactional
-    @CacheEvict(value = "friendshipsByUserAndFriendIDs",
-            key = "T(java.lang.Math).min(#userId,#friendId) + '-' + T(java.lang.Math).max(#userId,#friendId)")
-    public FriendshipDTO endFriendshipByUserIdAndFriendId(Long userId,Long friendId){
+       public FriendshipDTO endFriendshipByUserIdAndFriendId(Long userId,Long friendId){
         var friendship = getFriendshipEntityByUserIdAndFriendId(userId,friendId);
         if(friendship.isEmpty()){
             throw new IllegalArgumentException("Friendship Doesn't Exists !!");

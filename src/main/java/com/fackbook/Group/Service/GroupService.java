@@ -4,6 +4,8 @@ import com.fackbook.Exception.ImageUploadException;
 import com.fackbook.Group.DTO.GroupDTO;
 import com.fackbook.Group.Entity.Group;
 import com.fackbook.Group.Entity.GroupMember;
+import com.fackbook.Group.Enum.ApprovalMode;
+import com.fackbook.Group.Enum.JoinPolicy;
 import com.fackbook.Group.Mapper.GroupMapper;
 import com.fackbook.Group.Repository.GroupRepository;
 import com.fackbook.Shared.Helper.FileHelper;
@@ -62,6 +64,8 @@ public class GroupService {
                 .description(dto.getDescription())
                 .numberOfMembers(BigInteger.ONE)
                 .createdAt(LocalDateTime.now())
+                .joinPolicy(dto.getJoinPolicy() != null ? dto.getJoinPolicy() :JoinPolicy.PUBLIC)
+                .approvalMode(dto.getApprovalMode() != null ? dto.getApprovalMode() : ApprovalMode.NONE)
                 .deleted(false)
                 .deletedAt(null)
                 .imageUrl(null)
@@ -69,7 +73,15 @@ public class GroupService {
                 .status(dto.getStatus())
                 .build();
         groupRepository.save(group);
-        var groupMember = groupMemberService.createNewGroupMember(userId,group.getId(), Role.GROUP_ADMIN);
+        var groupMember = GroupMember.builder()
+                .user(user)
+                .role(Role.GROUP_ADMIN)
+                .group(group)
+                .createdAt(LocalDateTime.now())
+                .status(Status.ACTIVE)
+                .deletedAt(null)
+                .deleted(false)
+                .build();
         group.getMembers().add(groupMember);
         return GroupMapper.toDTO(groupRepository.save(group));
     }
@@ -120,6 +132,8 @@ public class GroupService {
         }
         Optional.ofNullable(dto.getName()).ifPresent(group::setName);
         Optional.ofNullable(dto.getDescription()).ifPresent(group::setDescription);
+        Optional.ofNullable(dto.getJoinPolicy()).ifPresent(group::setJoinPolicy);
+        Optional.ofNullable(dto.getApprovalMode()).ifPresent(group::setApprovalMode);
         group.setUpdatedAt(LocalDateTime.now());
         return GroupMapper.toDTO(groupRepository.save(group));
     }

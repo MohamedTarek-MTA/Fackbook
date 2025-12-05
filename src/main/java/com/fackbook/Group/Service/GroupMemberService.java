@@ -5,6 +5,9 @@ import com.fackbook.Group.Entity.GroupMember;
 import com.fackbook.Group.Mapper.GroupMemberMapper;
 import com.fackbook.Group.Repository.GroupMemberRepository;
 import com.fackbook.Group.Repository.GroupRepository;
+import com.fackbook.Request.Entity.Request;
+import com.fackbook.Request.Enum.RequestActionType;
+import com.fackbook.Request.Service.RequestService;
 import com.fackbook.User.Enum.Role;
 import com.fackbook.User.Enum.Status;
 import com.fackbook.User.Service.UserService;
@@ -27,6 +30,7 @@ public class GroupMemberService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRepository groupRepository;
     private final UserService userService;
+    private final RequestService requestService;
 
     public Optional<GroupMember> getGroupMemberEntityById(Long id){
         return groupMemberRepository.findById(id);
@@ -50,7 +54,7 @@ public class GroupMemberService {
         return groupMemberRepository.findByGroup_NameIgnoreCase(group.getName(),pageable).map(GroupMemberMapper::toDTO);
     }
     @Transactional
-    protected GroupMember createNewGroupMember(Long userId, Long groupId, Role role){
+    private GroupMember createNewGroupMember(Long userId, Long groupId, Role role){
         var groupMember = getGroupMemberEntityByUserIdAndGroupId(userId,groupId);
         var group = groupRepository.findById(groupId).orElseThrow(()->new IllegalArgumentException("Group Not Found !"));
         if(!group.getStatus().equals(Status.ACTIVE)){
@@ -82,6 +86,46 @@ public class GroupMemberService {
         groupRepository.save(group);
         return groupMemberRepository.save(newGroupMember);
     }
+    @Transactional
+    public GroupMember handleGroupMembership(Long userId, Long groupId, Request request) {
+
+        var group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found!"));
+
+        // Check group status
+        if (!group.getStatus().equals(Status.ACTIVE)) {
+            throw new IllegalArgumentException("Sorry, the group is currently not active!");
+        }
+
+        switch (group.getJoinPolicy()) {
+
+            case PUBLIC:
+                // No request needed, create membership immediately
+                return createNewGroupMember(userId, groupId, Role.GROUP_MEMBER);
+
+            case REQUEST:
+                if (request == null || request.getActionType() != RequestActionType.GROUP_JOIN_REQUEST) {
+                    throw new IllegalArgumentException("No valid join request found for this group.");
+                }
+                if (request.getStatus() != com.fackbook.Request.Enum.Status.ACCEPTED) {
+                    throw new IllegalArgumentException("The membership request has not been approved yet.");
+                }
+                return createNewGroupMember(userId, groupId, Role.GROUP_MEMBER);
+
+            case INVENT_ONLY:
+                if (request == null || request.getActionType() != RequestActionType.GROUP_INVITE) {
+                    throw new IllegalArgumentException("No valid invitation found for this user.");
+                }
+                if (request.getStatus() != com.fackbook.Request.Enum.Status.ACCEPTED) {
+                    throw new IllegalArgumentException("The invitation has not been accepted yet.");
+                }
+                return createNewGroupMember(userId, groupId, Role.GROUP_MEMBER);
+
+            default:
+                throw new IllegalArgumentException("Unhandled join policy: " + group.getJoinPolicy());
+        }
+    }
+
     @CachePut(value = "groupMembersByUserAndGroupIDs",key = "#userId + '-' + #groupId")
     public GroupMemberDTO toGroupAdmin(Long userId,Long groupId){
         return GroupMemberMapper.toDTO(createNewGroupMember(userId,groupId,Role.GROUP_ADMIN));

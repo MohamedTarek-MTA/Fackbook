@@ -1,8 +1,11 @@
 package com.fackbook.Post.Service;
 
 
+import com.fackbook.Friend.Repository.FriendshipRepository;
 import com.fackbook.Friend.Service.FriendService;
 import com.fackbook.Group.Entity.Group;
+import com.fackbook.Group.Repository.GroupMemberRepository;
+import com.fackbook.Group.Repository.GroupRepository;
 import com.fackbook.Group.Service.GroupMemberService;
 import com.fackbook.Group.Service.GroupService;
 import com.fackbook.Post.DTO.PostDTO;
@@ -14,9 +17,14 @@ import com.fackbook.Post.Mapper.PostMapper;
 import com.fackbook.Post.Repository.PostRepository;
 import com.fackbook.Post.Util.Service.AccessibilityService;
 import com.fackbook.Post.Util.Service.MediaManager;
+import com.fackbook.Request.DTO.RequestDTO;
+import com.fackbook.Request.Enum.RequestActionType;
+import com.fackbook.Request.Enum.RequestTargetType;
+import com.fackbook.Request.Service.RequestService;
 import com.fackbook.Shared.Helper.FileHelper;
 import com.fackbook.User.Enum.Role;
 import com.fackbook.User.Service.UserService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -38,11 +46,12 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserService userService;
     private final FileHelper fileHelper;
-    private final GroupService groupService;
+    private final GroupRepository groupRepository;
     private final AccessibilityService accessibilityService;
-    private final FriendService friendService;
-    private final GroupMemberService groupMemberService;
+    private final FriendshipRepository friendshipRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final MediaManager mediaManager;
+    private final RequestService requestService;
 
     public Post getPostEntityById(Long id){
         return postRepository.findById(id).orElseThrow(()->
@@ -183,6 +192,7 @@ public class PostService {
     public PostDTO createNewPost(Long userId, Long groupId , PostDTO dto, MultipartFile image , MultipartFile video){
         var user = userService.getUserEntityById(userId);
         Group group = null;
+        ModerationStatus moderationStatus = ModerationStatus.NONE;
         String imageUrl = fileHelper.generateImageUrl(image);
         String videoUrl = fileHelper.generateVideoUrl(video,"Uploaded By "+user.getName()+" @"+user.getId(),"Description: "+dto.getContent());
         boolean isContentNull = dto.getContent() == null || dto.getContent().isBlank();
@@ -191,9 +201,11 @@ public class PostService {
         if(isContentNull && isImageNull && isVideoNull){
             throw new IllegalArgumentException("Post Couldn't be empty !!");
         }
-        if(groupId != null){
-             group = groupService.getGroupEntityByGroupId(groupId);
-        }
+       if(groupId != null){
+           group = groupRepository.findById(groupId).orElseThrow(()->new IllegalArgumentException("Group Not Found !"));
+            moderationStatus = handleGroupApprovalForPost(userId,groupId);
+       }
+
         Post post = Post.builder()
                 .user(user)
                 .group(group)
@@ -206,11 +218,37 @@ public class PostService {
                 .numberOfShares(BigInteger.ZERO)
                 .numberOfComments(BigInteger.ZERO)
                 .numberOfReacts(BigInteger.ZERO)
-                .moderationStatus(group != null ? ModerationStatus.PENDING_APPROVAL : ModerationStatus.NONE)
+                .moderationStatus(moderationStatus)
                 .visibilityStatus(dto.getVisibilityStatus() != null ? dto.getVisibilityStatus():VisibilityStatus.ACTIVE)
                 .privacy(dto.getPrivacy())
                 .build();
         return PostMapper.toDTO(postRepository.save(post));
+    }
+    private ModerationStatus handleGroupApprovalForPost(Long userId, Long groupId) {
+
+        if (groupId == null) {
+            return ModerationStatus.NONE;
+        }
+
+        Group group = groupRepository.findById(groupId).orElseThrow(()->new IllegalArgumentException("Group Not Found !"));
+
+        return switch (group.getApprovalMode()) {
+            case NONE -> ModerationStatus.NONE;
+
+            case POST_ONLY, POST_AND_COMMENT -> {
+                requestService.createNewRequest(
+                        userId,
+                        groupId,
+                        RequestDTO.builder()
+                                .actionType(RequestActionType.CONTENT_APPROVAL)
+                                .targetType(RequestTargetType.POST)
+                                .build()
+                );
+                yield ModerationStatus.PENDING_APPROVAL;
+
+            }
+            default -> throw new IllegalArgumentException("Unhandled Approval Mode: " + group.getApprovalMode());
+        };
     }
 
     @Transactional
@@ -248,6 +286,7 @@ public class PostService {
         var post = getPostEntityById(postId);
         var user = userService.getUserEntityById(userId);
         Group group = null;
+        var moderationStatus = ModerationStatus.NONE;
         accessibilityService.validateVisibility(post,userId);
         accessibilityService.validateModeration(post,userId);
         validatePrivacy(userId,post);
@@ -261,13 +300,14 @@ public class PostService {
             throw new IllegalArgumentException("Post Couldn't be empty !!");
         }
         if(groupId != null){
-            group = groupService.getGroupEntityByGroupId(groupId);
+            group = groupRepository.findById(groupId).orElseThrow(()->new IllegalArgumentException("Group Not Found !"));
+            moderationStatus = handleGroupApprovalForPost(userId,groupId);
         }
         Optional.ofNullable(group).ifPresent(post::setGroup);
         Optional.ofNullable(dto.getContent()).ifPresent(post::setContent);
         Optional.ofNullable(dto.getPrivacy()).ifPresent(post::setPrivacy);
         post.setVisibilityStatus(dto.getVisibilityStatus() != null ? dto.getVisibilityStatus() : VisibilityStatus.ACTIVE);
-        post.setModerationStatus(group != null ? ModerationStatus.PENDING_APPROVAL : ModerationStatus.NONE);
+        post.setModerationStatus(moderationStatus);
         post.setUpdatedAt(LocalDateTime.now());
         return PostMapper.toDTO(postRepository.save(post));
     }
@@ -332,8 +372,8 @@ public class PostService {
         Long authorId = post.getAuthorId();
         Long groupOwnerId = post.getGroupOwnerId();
 
-        var friendship = friendService.getFriendshipEntityByUserIdAndFriendId(authorId, userId);
-        var groupMember = groupMemberService.getGroupMemberEntityByUserIdAndGroupId(userId, groupOwnerId);
+        var friendship = friendshipRepository.findByUser_IdAndFriend_Id(authorId, userId);
+        var groupMember = groupMemberRepository.findByUser_IdAndGroup_Id(userId, groupOwnerId);
 
         boolean isAuthor = userId.equals(authorId);
         boolean isSystemAdmin = user.getRole() == Role.SYSTEM_ADMIN;
@@ -378,9 +418,6 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public void savePost(Post post){
-        postRepository.save(post);
-    }
     public Page<PostDTO> getAllPosts(Pageable pageable){
         return postRepository.findAll(pageable).map(PostMapper::toDTO);
     }

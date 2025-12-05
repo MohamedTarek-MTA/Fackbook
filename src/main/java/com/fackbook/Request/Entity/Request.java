@@ -1,7 +1,8 @@
 package com.fackbook.Request.Entity;
 
+import com.fackbook.Request.Enum.RequestActionType;
+import com.fackbook.Request.Enum.RequestTargetType;
 import com.fackbook.Request.Enum.Status;
-import com.fackbook.Request.Enum.TargetType;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +27,10 @@ public class Request {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private TargetType targetType;
+    private RequestTargetType targetType;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private RequestActionType actionType;
 
     @NotNull
     @Enumerated(EnumType.STRING)

@@ -1,7 +1,7 @@
 package com.fackbook.Report.DTO;
 
+import com.fackbook.Request.Enum.RequestTargetType;
 import com.fackbook.Request.Enum.Status;
-import com.fackbook.Request.Enum.TargetType;
 import lombok.*;
 
 import java.io.Serializable;
@@ -24,7 +24,7 @@ public class ReportDTO implements Serializable {
     private String videoUrl;
 
     private Status status;
-    private TargetType targetType;
+    private RequestTargetType targetType;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
