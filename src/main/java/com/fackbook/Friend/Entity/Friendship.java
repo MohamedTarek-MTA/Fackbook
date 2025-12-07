@@ -46,3 +46,12 @@ public class Friendship {
     @JoinColumn(name = "friend_id", nullable = false)
     private User friend;
 }
+
+/*      Don't forget to run this constraint inside you database             */
+
+/*----------------------------------------------------
+*       ALTER TABLE friendships                       *
+*       ADD CONSTRAINT chk_user_less_than_friend      *
+*       CHECK (user_id < friend_user_id);               *
+*---------------------------------------------------------
+* */
