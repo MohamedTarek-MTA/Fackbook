@@ -10,7 +10,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reacts")
+@Table(name = "reacts",uniqueConstraints = {
+        @UniqueConstraint(
+                columnNames = {"user_id", "target_type", "target_id"}
+        )
+})
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
