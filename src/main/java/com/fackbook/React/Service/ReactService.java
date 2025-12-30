@@ -1,6 +1,7 @@
 package com.fackbook.React.Service;
 
 import com.fackbook.Comment.Repository.CommentRepository;
+import com.fackbook.Notification.NotificationService;
 import com.fackbook.Post.Enum.VisibilityStatus;
 import com.fackbook.Post.Repository.PostRepository;
 import com.fackbook.React.Entity.React;
@@ -27,6 +28,7 @@ public class ReactService {
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
     private final ReactRepository reactRepository;
+    private final NotificationService notificationService;
 
     private Long resolveTargetId(RequestTargetType targetType,Long targetId){
         return switch (targetType){
@@ -117,7 +119,7 @@ public class ReactService {
                     .build();
             reactRepository.save(react);
             changeNumberOfReactsByOne(actualTargetId, targetType, true);
-
+            notificationService.sendNotificationViaReact(react);
         }
     }
     @Transactional(readOnly = true)

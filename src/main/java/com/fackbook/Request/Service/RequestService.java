@@ -3,8 +3,8 @@ package com.fackbook.Request.Service;
 import com.fackbook.Friend.Repository.FriendshipRepository;
 import com.fackbook.Group.Enum.JoinPolicy;
 import com.fackbook.Group.Repository.GroupRepository;
+import com.fackbook.Notification.NotificationService;
 import com.fackbook.Post.Repository.PostRepository;
-import com.fackbook.Post.Service.PostService;
 import com.fackbook.Request.DTO.RequestDTO;
 import com.fackbook.Request.Entity.Request;
 import com.fackbook.Request.Enum.RequestActionType;
@@ -30,7 +30,7 @@ public class RequestService {
     private final FriendshipRepository friendshipRepository;
     private final PostRepository postRepository;
     private final RequestRepository requestRepository;
-
+    private final NotificationService notificationService;
     @Transactional
     public Request createNewRequest(Long userId, Long targetId, RequestDTO dto){
         var action = dto.getActionType();
@@ -50,7 +50,9 @@ public class RequestService {
                 .deleted(false)
                 .deletedAt(null)
                 .build();
-        return requestRepository.save(request);
+        requestRepository.save(request);
+        notificationService.sendNotificationViaRequest(request);
+        return request;
     }
     private Long resolveTargetId(RequestActionType action, Long targetId, Long userId) {
 

@@ -4,6 +4,8 @@ import com.fackbook.Comment.DTO.CommentDTO;
 import com.fackbook.Comment.Entity.Comment;
 import com.fackbook.Comment.Mapper.CommentMapper;
 import com.fackbook.Comment.Service.CommentService;
+import com.fackbook.Notification.Notification;
+import com.fackbook.Notification.NotificationProducer;
 import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.VisibilityStatus;
 import com.fackbook.Post.Util.Service.AccessibilityService;
@@ -13,6 +15,7 @@ import com.fackbook.Reply.DTO.ReplyDTO;
 import com.fackbook.Reply.Entity.Reply;
 import com.fackbook.Reply.Mapper.ReplyMapper;
 import com.fackbook.Reply.Repository.ReplyRepository;
+import com.fackbook.Request.Enum.RequestTargetType;
 import com.fackbook.Shared.Helper.FileHelper;
 import com.fackbook.User.Service.UserService;
 import jakarta.transaction.Transactional;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -39,6 +43,7 @@ public class ReplyService {
     private final FileHelper fileHelper;
     private final ReplyRepository replyRepository;
     private final MediaManager mediaManager;
+    private final NotificationProducer notificationProducer;
 
     public Reply getReplyEntityById(Long id){
         return replyRepository.findById(id).orElseThrow(()->new IllegalArgumentException("Reply Not Found !"));
@@ -159,6 +164,16 @@ public class ReplyService {
         comment.getReplies().add(reply);
         comment.setNumberOfReplies(comment.getNumberOfReplies().add(BigInteger.ONE));
         commentService.saveComment(comment);
+        notificationProducer.sendNotification(
+                Notification.builder()
+                        .userId(comment.getUser().getId().toString())
+                        .fromUserId(userId.toString())
+                        .read(false)
+                        .targetType(RequestTargetType.REPLY.name())
+                        .createdAt(Instant.now())
+                        .message("Your Comment Received A Reply From "+user.getName())
+                        .build()
+        );
         return ReplyMapper.toDTO(reply);
     }
 
