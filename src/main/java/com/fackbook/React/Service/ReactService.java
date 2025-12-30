@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +41,12 @@ public class ReactService {
                 if(comment.getVisibilityStatus().equals(VisibilityStatus.DELETED)||comment.getVisibilityStatus().equals(VisibilityStatus.REMOVED_BY_ADMIN))
                     throw new IllegalArgumentException("Comment is already "+comment.getVisibilityStatus().name());
                 yield comment.getId();
+            }
+            case REPLY -> {
+                var reply = replyRepository.findById(targetId).orElseThrow(()->new IllegalArgumentException("Reply Not Found !"));
+                if(reply.getVisibilityStatus().equals(VisibilityStatus.DELETED)||reply.getVisibilityStatus().equals(VisibilityStatus.REMOVED_BY_ADMIN))
+                    throw new IllegalArgumentException("Reply is already "+reply.getVisibilityStatus().name());
+                yield reply.getId();
             }
             default -> throw new IllegalArgumentException("Unknown target type "+targetType);
         };
@@ -73,6 +78,18 @@ public class ReactService {
                         comment.setNumberOfReacts(comment.getNumberOfReacts().subtract(BigInteger.ONE));
                     }                }
                 commentRepository.save(comment);
+            }
+            case REPLY -> {
+                var reply = replyRepository.findById(actualTargetId).get();
+                if(Boolean.TRUE.equals(increased)){
+                    reply.setNumberOfReacts(reply.getNumberOfReacts().add(BigInteger.ONE));
+                }
+                if(Boolean.FALSE.equals(increased)){
+                    var current = reply.getNumberOfReacts();
+                    if(current.compareTo(BigInteger.ZERO) > 0){
+                        reply.setNumberOfReacts(reply.getNumberOfReacts().subtract(BigInteger.ONE));
+                    }                }
+                replyRepository.save(reply);
             }
         }
     }

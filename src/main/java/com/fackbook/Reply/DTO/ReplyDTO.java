@@ -5,6 +5,7 @@ import com.fackbook.Post.Enum.VisibilityStatus;
 import lombok.*;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Getter
@@ -25,6 +26,8 @@ public class ReplyDTO implements Serializable {
 
     private VisibilityStatus visibilityStatus;
     private ModerationStatus moderationStatus;
+
+    private BigInteger numberOfReacts;
 
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;

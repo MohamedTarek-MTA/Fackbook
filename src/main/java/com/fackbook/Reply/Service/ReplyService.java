@@ -148,6 +148,7 @@ public class ReplyService {
                 .content(dto.getContent())
                 .imageUrl(imageUrl)
                 .videoUrl(videoUrl)
+                .numberOfReacts(BigInteger.ZERO)
                 .createdAt(LocalDateTime.now())
                 .moderationStatus(comment.getPost().getGroup() != null ? ModerationStatus.PENDING_APPROVAL:ModerationStatus.NONE)
                 .visibilityStatus(dto.getVisibilityStatus() != null ? dto.getVisibilityStatus() : VisibilityStatus.ACTIVE)

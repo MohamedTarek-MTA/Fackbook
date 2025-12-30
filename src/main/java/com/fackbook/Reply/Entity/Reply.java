@@ -7,9 +7,11 @@ import com.fackbook.Post.Util.Interface.AccessibleContent;
 import com.fackbook.Post.Util.Interface.MediaAttachable;
 import com.fackbook.User.Entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,6 +37,8 @@ public class Reply implements AccessibleContent, MediaAttachable {
     @NotNull
     @Enumerated(EnumType.STRING)
     private ModerationStatus moderationStatus;
+    @Min(0)
+    private BigInteger numberOfReacts = BigInteger.ZERO;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
