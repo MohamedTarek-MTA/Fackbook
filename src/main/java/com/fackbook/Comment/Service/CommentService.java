@@ -6,6 +6,8 @@ import com.fackbook.Comment.Mapper.CommentMapper;
 import com.fackbook.Comment.Repository.CommentRepository;
 import com.fackbook.Group.Entity.Group;
 import com.fackbook.Group.Service.GroupService;
+import com.fackbook.Notification.Notification;
+import com.fackbook.Notification.NotificationProducer;
 import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Enum.VisibilityStatus;
 import com.fackbook.Post.Util.Service.AccessibilityService;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigInteger;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 @Service
@@ -41,6 +44,7 @@ public class CommentService {
     private final MediaManager mediaManager;
     private final GroupService groupService;
     private final RequestService requestService;
+    private final NotificationProducer notificationProducer;
 
     public Comment getCommentEntityById(Long commentId){
        return commentRepository.findById(commentId).orElseThrow(()->
@@ -170,6 +174,16 @@ public class CommentService {
             post.setNumberOfComments(post.getNumberOfComments().add(BigInteger.ONE));
         }
         postService.savePost(post);
+        notificationProducer.sendNotification(
+                Notification.builder()
+                        .userId(post.getUser().getId().toString())
+                        .fromUserId(userId.toString())
+                        .targetType(RequestTargetType.COMMENT.name())
+                        .read(false)
+                        .createdAt(Instant.now())
+                        .message("New Comment Received From "+user.getName())
+                        .build()
+        );
         return CommentMapper.toDTO(comment);
     }
     private ModerationStatus handleGroupApprovalForComment(Long userId, Long groupId) {
