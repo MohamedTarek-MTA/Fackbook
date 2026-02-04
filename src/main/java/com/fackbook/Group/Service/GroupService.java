@@ -31,7 +31,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GroupService {
     private final GroupRepository groupRepository;
-    private final GroupMemberService groupMemberService;
     private final UserService userService;
     private final FileHelper fileHelper;
 
@@ -70,7 +69,7 @@ public class GroupService {
                 .deletedAt(null)
                 .imageUrl(null)
                 .members(new ArrayList<GroupMember>())
-                .status(dto.getStatus())
+                .status(dto.getStatus() != null ? dto.getStatus() : Status.ACTIVE)
                 .build();
         groupRepository.save(group);
         var groupMember = GroupMember.builder()
