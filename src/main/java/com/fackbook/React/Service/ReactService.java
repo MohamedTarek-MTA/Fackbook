@@ -106,7 +106,9 @@ public class ReactService {
                 changeNumberOfReactsByOne(actualTargetId,targetType,false);
             }
             else {
-                r.setReactType(r.getReactType());
+                r.setReactType(reactType);
+                r.setUpdatedAt(LocalDateTime.now());
+                reactRepository.save(r);
             }
         }
         else {

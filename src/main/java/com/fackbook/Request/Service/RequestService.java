@@ -3,6 +3,7 @@ package com.fackbook.Request.Service;
 import com.fackbook.Friend.Repository.FriendshipRepository;
 import com.fackbook.Group.Enum.JoinPolicy;
 import com.fackbook.Group.Repository.GroupRepository;
+import com.fackbook.Group.Service.GroupMemberService;
 import com.fackbook.Notification.NotificationService;
 import com.fackbook.Post.Repository.PostRepository;
 import com.fackbook.Request.DTO.RequestDTO;
@@ -30,6 +31,7 @@ public class RequestService {
     private final FriendshipRepository friendshipRepository;
     private final PostRepository postRepository;
     private final RequestRepository requestRepository;
+    private final GroupMemberService groupMemberService;
     private final NotificationService notificationService;
     @Transactional
     public Request createNewRequest(Long userId, Long targetId, RequestDTO dto){
@@ -172,6 +174,9 @@ public class RequestService {
         var request = getRequestEntityById(requestId);
         if(!request.getStatus().equals(Status.PENDING)){
             throw new IllegalArgumentException("Request Already "+request.getStatus().name());
+        }
+        if(request.getActionType().equals(RequestActionType.GROUP_JOIN_REQUEST)){
+            groupMemberService.handleGroupMembership(request.getUser().getId(),request.getTargetId(),request);
         }
         return changeRequestStatus(requestId,Status.ACCEPTED,false);
     }

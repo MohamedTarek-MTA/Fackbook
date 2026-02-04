@@ -30,7 +30,6 @@ public class GroupMemberService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupRepository groupRepository;
     private final UserService userService;
-    private final RequestService requestService;
 
     public Optional<GroupMember> getGroupMemberEntityById(Long id){
         return groupMemberRepository.findById(id);
