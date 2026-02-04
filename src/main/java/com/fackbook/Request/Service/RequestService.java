@@ -1,11 +1,15 @@
 package com.fackbook.Request.Service;
 
+import com.fackbook.Comment.Repository.CommentRepository;
+import com.fackbook.Comment.Service.CommentService;
 import com.fackbook.Friend.Repository.FriendshipRepository;
 import com.fackbook.Group.Enum.JoinPolicy;
 import com.fackbook.Group.Repository.GroupRepository;
 import com.fackbook.Group.Service.GroupMemberService;
 import com.fackbook.Notification.NotificationService;
+import com.fackbook.Post.Enum.ModerationStatus;
 import com.fackbook.Post.Repository.PostRepository;
+import com.fackbook.Post.Service.PostService;
 import com.fackbook.Request.DTO.RequestDTO;
 import com.fackbook.Request.Entity.Request;
 import com.fackbook.Request.Enum.RequestActionType;
@@ -31,6 +35,7 @@ public class RequestService {
     private final FriendshipRepository friendshipRepository;
     private final PostRepository postRepository;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
     private final GroupMemberService groupMemberService;
     private final NotificationService notificationService;
     @Transactional
@@ -175,17 +180,38 @@ public class RequestService {
         if(!request.getStatus().equals(Status.PENDING)){
             throw new IllegalArgumentException("Request Already "+request.getStatus().name());
         }
+        var acceptedRequest = changeRequestStatus(requestId,Status.ACCEPTED,false);
         if(request.getActionType().equals(RequestActionType.GROUP_JOIN_REQUEST)){
             groupMemberService.handleGroupMembership(request.getUser().getId(),request.getTargetId(),request);
         }
-        return changeRequestStatus(requestId,Status.ACCEPTED,false);
+        if(request.getActionType().equals(RequestActionType.CONTENT_APPROVAL)){
+            if(request.getTargetType().equals(RequestTargetType.POST)){
+                changeModerationStatusByPostId(request.getTargetId(), ModerationStatus.NONE);
+            }
+            if(request.getTargetType().equals(RequestTargetType.COMMENT)){
+                changeModerationStatusByCommentId(request.getTargetId(),ModerationStatus.NONE);
+            }
+        }
+        return acceptedRequest;
     }
     public RequestDTO setRequestAsRejected(Long requestId){
         var request = getRequestEntityById(requestId);
         if(!request.getStatus().equals(Status.PENDING)){
             throw new IllegalArgumentException("Request Already "+request.getStatus().name());
         }
-        return changeRequestStatus(requestId,Status.REJECTED,true);
+        var rejectedRequest = changeRequestStatus(requestId,Status.REJECTED,true);
+        if(request.getActionType().equals(RequestActionType.GROUP_JOIN_REQUEST)){
+            groupMemberService.handleGroupMembership(request.getUser().getId(),request.getTargetId(),request);
+        }
+        if(request.getActionType().equals(RequestActionType.CONTENT_APPROVAL)){
+            if(request.getTargetType().equals(RequestTargetType.POST)){
+                changeModerationStatusByPostId(request.getTargetId(), ModerationStatus.REJECTED);
+            }
+            if(request.getTargetType().equals(RequestTargetType.COMMENT)){
+                changeModerationStatusByCommentId(request.getTargetId(),ModerationStatus.REJECTED);
+            }
+        }
+        return rejectedRequest;
     }
     public RequestDTO setRequestAsCanceled(Long requestId){
         var request = getRequestEntityById(requestId);
@@ -203,5 +229,20 @@ public class RequestService {
     }
     public void saveRequest(Request request){
         requestRepository.save(request);
+    }
+
+    @Transactional
+    private void changeModerationStatusByCommentId(Long commentId,ModerationStatus moderationStatus){
+        var comment = commentRepository.findById(commentId).orElseThrow(()->new IllegalArgumentException("Comment Not Found!"));
+        comment.setModerationStatus(moderationStatus);
+        comment.setUpdatedAt(LocalDateTime.now());
+        commentRepository.save(comment);
+    }
+    @Transactional
+    private void changeModerationStatusByPostId(Long postId,ModerationStatus moderationStatus){
+        var post = postRepository.findById(postId).orElseThrow(()->new IllegalArgumentException("Post Not Found!"));
+        post.setModerationStatus(moderationStatus);
+        post.setUpdatedAt(LocalDateTime.now());
+        postRepository.save(post);
     }
 }
