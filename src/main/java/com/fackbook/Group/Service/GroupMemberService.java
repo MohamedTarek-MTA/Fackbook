@@ -83,7 +83,9 @@ public class GroupMemberService {
         group.getMembers().add(newGroupMember);
         group.setNumberOfMembers(group.getNumberOfMembers().add(BigInteger.ONE));
         groupRepository.save(group);
-        return groupMemberRepository.save(newGroupMember);
+        groupMemberRepository.save(newGroupMember);
+        userService.toGroupMember(userId);
+        return newGroupMember;
     }
     @Transactional
     public GroupMember handleGroupMembership(Long userId, Long groupId, Request request) {
