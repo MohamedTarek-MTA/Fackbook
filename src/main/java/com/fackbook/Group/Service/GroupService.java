@@ -82,6 +82,7 @@ public class GroupService {
                 .deleted(false)
                 .build();
         group.getMembers().add(groupMember);
+        userService.toGroupAdmin(userId);
         return GroupMapper.toDTO(groupRepository.save(group));
     }
     @Transactional
