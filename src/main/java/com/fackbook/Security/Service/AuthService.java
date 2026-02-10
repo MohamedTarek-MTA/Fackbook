@@ -2,6 +2,7 @@ package com.fackbook.Security.Service;
 
 import com.fackbook.Security.DTO.*;
 import com.fackbook.Security.Entity.RefreshToken;
+import com.fackbook.Security.Repository.RefreshTokenRepository;
 import com.fackbook.Security.Util.JwtUtil;
 import com.fackbook.Shared.Helper.Helper;
 import com.fackbook.Shared.Mail.DTO.MailDTO;
@@ -36,6 +37,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final MailService mailService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public String register(RegisterRequest request){
@@ -84,6 +86,9 @@ public class AuthService {
         }
         if(!user.getStatus().equals(Status.ACTIVE)){
             throw new IllegalArgumentException("Your account is currently " + user.getStatus().name().toLowerCase() + ". Please verify or contact support.");
+        }
+        if(refreshTokenRepository.findByUser_Id(user.getId()).isPresent()){
+            throw new IllegalArgumentException("This Account Already Login If You Want New Token You Could Use refresh-token end point !");
         }
         String token = jwtUtil.generateToken(user.getId(),user.getEmail(),user.getRole().name(),user.getStatus().name());
         generateRefreshTokenCookies(jwtUtil.generateRefreshToken(user.getId()),response);
@@ -155,7 +160,7 @@ public class AuthService {
         Cookie cookie = new Cookie("refreshToken",refreshToken.getRefreshToken());
         cookie.setHttpOnly(true);
         cookie.setSecure(true); // if not working it because https issues so make it false
-        cookie.setPath("/api/v1/auth/refresh-token");
+        cookie.setPath("/");
         long maxAgeSeconds = refreshToken.getExpirationDate().getEpochSecond() - Instant.now().getEpochSecond();
         cookie.setMaxAge((int)maxAgeSeconds);
          response.addCookie(cookie);
