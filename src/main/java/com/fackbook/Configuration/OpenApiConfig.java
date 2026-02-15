@@ -13,21 +13,26 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "bearerAuth";
+        final String bearer = "bearerAuth";
+        final String csrf = "XSRF-TOKEN";
 
         return new OpenAPI()
                 .info(new Info()
                         .title("Fackbook API")
                         .version("1.0.0")
                         .description("Backend APIs for Fackbook platform"))
-                // ✅ This tells Swagger to use the bearerAuth scheme for all endpoints
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .addSecurityItem(new SecurityRequirement().addList(bearer))
+                .addSecurityItem(new SecurityRequirement().addList(csrf))
                 .components(new Components()
-                        .addSecuritySchemes(securitySchemeName,
+                        .addSecuritySchemes(bearer,
                                 new SecurityScheme()
-                                        .name(securitySchemeName)
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
-                                        .bearerFormat("JWT")));
+                                        .bearerFormat("JWT"))
+                        .addSecuritySchemes(csrf,
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .name("X-XSRF-TOKEN")));
     }
 }
